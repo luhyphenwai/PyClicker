@@ -1,5 +1,6 @@
 import threading
 from pyautogui import *
+import pyautogui
 import time, keyboard, threading
 import win32api, win32con, win32gui
 
@@ -110,8 +111,8 @@ def click_colors():
             elif (a == 0 or a == 1) and let_go == False:
                 let_go = True
         # test print of positions
-
         print(tuples)
+
         # Convert tuples to just lists
         for i in range(2):
             pos.append([])
@@ -132,6 +133,23 @@ def click_colors():
             pos[1][1] = temp # Set lower y
         print(pos)
 
+        print("How many pixels would you like to skip over when checking for colors (Lower numbers check more pixels but is slower)")
+
+        speed = -1
+        while (speed == -1):
+            if (current_option == 0):
+                    break
+            try:
+                speed = int(input("Input an integer"))
+            except ValueError:
+                print("That is not a valid integer")
+        print("You picked "+str(speed))
+
+        # Get pixel positions
+        # for x in range(pos[1][0], pos[0][0], speed):
+        #     for y in range(pos[1][1], pos[0][1], speed):
+        #         positions.append([x,y])
+
     elif (color_option == 2):
         print("Click on the positions you would like to check, press (alt+4) to finish")
         let_go = True
@@ -146,6 +164,64 @@ def click_colors():
             elif (a == 0 or a == 1) and let_go == False:
                 let_go = True
 
+    print("Hover over the colors you would like for the program to click on and press (alt+1), press (alt+2) when you are done")
+    colors = []
+    let_go = True
+    while (keyboard.is_pressed('alt+2') == False):
+        if (current_option == 0):
+                    break
+        if (keyboard.is_pressed('alt+1') and let_go):
+            let_go = False
+            length = len(colors)
+            # colors.append(pyautogui.pixel(pyautogui.position()[0], pyautogui.position()[1]))
+            while (length == len(colors)):
+                if (current_option == 0):
+                    break
+                print(length == len(colors))
+                try:
+                    colors.append(pyautogui.pixel(pyautogui.position()[0], pyautogui.position()[1]))
+                except:
+                    pass
+            print(colors)
+        let_go = not keyboard.is_pressed('alt+1')
+    
+    print("The program is now searching the area and clicking when it finds the color")
+    if (color_option == 1):
+        while (current_option != 0):
+
+            pic = pyautogui.screenshot(region=(pos[1][0], pos[1][1], pos[0][0]-pos[1][0], pos[0][1]-pos[1][1]))
+
+            width, height = pic.size
+            for x in range(0, width, speed):
+                for y in range(0, height, speed):
+                    if (current_option == 0):   
+                        break
+                    current_color = pic.getpixel((x, y))
+                    print(pic.getpixel((x, y)))
+                    print((x+pos[1][0], y+pos[1][1]))
+                    for i in range(len(colors)):
+                        if (current_color == colors[i]):
+                            win32api.SetCursorPos((x+pos[1][0], y+pos[1][1]))
+                            click()
+                    time.sleep(0.1)
+                    
+    elif (color_option == 2):
+        while (current_option != 0):
+            for i in range(len(positions)):
+                if (current_option == 0):
+                    break
+                current_color = 0
+                while (current_color == 0):
+                    try:
+                        current_color = (pyautogui.pixel(positions[i][0], positions[i][1]))
+                    except:
+                        pass
+                for p in range(len(colors)):
+                    if (current_color == colors[p]):
+                        win32api.SetCursorPos((positions[i][0], positions[i][1]))
+                        click()
+    
+
 
 
 options = {
@@ -154,7 +230,7 @@ options = {
     3:click_positions,
     4:click_colors
 }
-
+1
 
 current_option = 0
 
@@ -163,6 +239,7 @@ def check_end():
     
     # Check for alt+0
     if (keyboard.is_pressed('alt+0')):
+        
         current_option = 0
         print("Select a new option")
    
@@ -185,7 +262,8 @@ def main():
         if current_option != 0:
             options[current_option]()
         
-        time.sleep((1/cps))
+        if (current_option != 4):
+            time.sleep((1/cps))
    
 def monitor_keyboard():
     global current_option
@@ -200,6 +278,13 @@ def monitor_keyboard():
         if (keyboard.is_pressed('alt+0') and current_option != 0):
             current_option = 0
             print("Select a new option")
+            print("Options:")
+            print("(alt+1) Set speed")
+            print("(alt+2) Click mouse button")
+            print("(alt+3) Click mouse at preset positions")
+            print("(alt+4) Click certain colors within a position")
+            print("(alt+9) End program")
+            print("(alt+0) Stop current selection")
 
 #Start threads
 t1 = threading.Thread(target=main, args=())
