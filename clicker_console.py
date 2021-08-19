@@ -12,7 +12,7 @@ click_type = 1
 # Click function, will click where x and y are set
 def click ():
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
-    time.sleep(0.01) # Pause script for 0.01 seconds for mouse down to register
+    time.sleep(0.001) # Pause script for 0.01 seconds for mouse down to register
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
 
 def set_speed():
@@ -136,7 +136,7 @@ def click_colors():
         print("How many pixels would you like to skip over when checking for colors (Lower numbers check more pixels but is slower)")
 
         speed = -1
-        while (speed == -1):
+        while (speed < 0):
             if (current_option == 0):
                     break
             try:
@@ -184,26 +184,41 @@ def click_colors():
                     pass
             print(colors)
         let_go = not keyboard.is_pressed('alt+1')
-    
+
+        
+    print("Would you like a delay after clicking to prevent misclicks")
+    delay = -1
+    while (delay == -1):
+            if (current_option == 0):
+                    break
+            try:
+                delay = int(input("Input an integer"))
+            except ValueError:
+                print("That is not a valid integer")
     print("The program is now searching the area and clicking when it finds the color")
     if (color_option == 1):
         while (current_option != 0):
-
+            flag = 0
             pic = pyautogui.screenshot(region=(pos[1][0], pos[1][1], pos[0][0]-pos[1][0], pos[0][1]-pos[1][1]))
 
             width, height = pic.size
             for x in range(0, width, speed):
                 for y in range(0, height, speed):
+                    
                     if (current_option == 0):   
                         break
                     current_color = pic.getpixel((x, y))
-                    print(pic.getpixel((x, y)))
-                    print((x+pos[1][0], y+pos[1][1]))
                     for i in range(len(colors)):
                         if (current_color == colors[i]):
                             win32api.SetCursorPos((x+pos[1][0], y+pos[1][1]))
                             click()
-                    time.sleep(0.1)
+                            flag = 1
+                            break
+                    if (flag == 1): break
+                
+                if (flag == 1): 
+                    break
+            
                     
     elif (color_option == 2):
         while (current_option != 0):
